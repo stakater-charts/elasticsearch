@@ -3,8 +3,8 @@
 
 String elasticSearchPackageName = ""
 String elasticSearchStoragePackageName = ""
-String elasticSearchChartName = "jenkins"
-String elasticSearchStorageChartName = "jenkins-storage"
+String elasticSearchChartName = "elasticsearch"
+String elasticSearchStorageChartName = "elasticsearch-storage"
 
 clientsNode(clientsImage: 'stakater/kops-ansible:helm-bundle') {
     container(name: 'clients') {
