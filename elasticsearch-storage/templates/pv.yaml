@@ -13,7 +13,7 @@ items:
     name: es-logging-data-efs-pv
   spec:
     capacity:
-      storage: 50Gi
+      storage: {{ .Values.elasticSearchStorage.capacity }}
     accessModes:
       - ReadWriteOnce
     nfs:

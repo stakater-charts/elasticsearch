@@ -16,5 +16,5 @@ items:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 50Gi
+        storage: {{ .Values.elasticSearchStorage.capacity }}
     volumeName: es-logging-data-efs-pv

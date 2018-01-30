@@ -2,3 +2,4 @@ elasticSearchStorage:
   namespace: tools
   efs:
     server: fs-blahblah.efs.us-west-2.amazonaws.com
+  capacity: 50Gi
