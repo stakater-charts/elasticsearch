@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    labels:
+      chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      release: {{ .Release.Name | quote }}
+      heritage: {{ .Release.Service | quote }}
+      version: {{ .Chart.Version }}
+    name: es-logging-data-efs-pv
+  spec:
+    capacity:
+      storage: {{ .Values.elasticSearchStorage.capacity }}
+    accessModes:
+      - ReadWriteOnce
+    nfs:
+      # Create this first!
+      server: {{ .Values.elasticSearchStorage.efs.server }}
+      path: "/es-logging-data"

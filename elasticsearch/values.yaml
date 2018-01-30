@@ -1,0 +1,13 @@
+kubernetes:
+  host: https://kubernetes.default
+elasticSearch:
+  namespace: tools
+  image:
+    name: stakater/elasticsearch
+    tag: "6.1.0"
+    pullPolicy: IfNotPresent
+  logsTemplate:
+    image:
+      name: stakater/es-k8s-logs-template
+      tag: "1.0.0"
+      pullPolicy: IfNotPresent

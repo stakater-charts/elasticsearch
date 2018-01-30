@@ -1,0 +1,78 @@
+---
+apiVersion: v1
+kind: List
+items:
+- apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    labels:
+      chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      release: {{ .Release.Name | quote }}
+      heritage: {{ .Release.Service | quote }}
+      version: {{ .Chart.Version }}
+    name: {{ template "name" . }}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+        version: {{ .Chart.Version }}
+    template:
+      metadata:
+        labels:
+          chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+          release: {{ .Release.Name | quote }}
+          heritage: {{ .Release.Service | quote }}
+          version: {{ .Chart.Version }}
+      spec:
+        initContainers:
+        - name: init
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command: ["chmod","777","/usr/share/elasticsearch/data"]
+          volumeMounts:
+          - name: data
+            mountPath: /usr/share/elasticsearch/data
+        - name: init-sysctl
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command: ["sysctl", "-w", "vm.max_map_count=262144"]
+          securityContext:
+            privileged: true
+        containers:
+        - env:
+          - name: KUBERNETES_MASTER
+            value: {{ .Values.kubernetes.host }}
+          - name: SERVICE
+            value: elasticsearch-masters
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          image: "{{ .Values.elasticSearch.image.name }}:{{ .Values.elasticSearch.image.tag }}"
+          imagePullPolicy: {{ .Values.elasticSearch.image.pullPolicy }}
+          livenessProbe:
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 9300
+          name: {{ template "name" . }}
+          readinessProbe:
+            httpGet:
+              path: /_template/logs
+              port: 9200
+            initialDelaySeconds: 10 
+            failureThreshold: 5
+          securityContext:
+            privileged: false
+          volumeMounts:
+          - mountPath: /usr/share/elasticsearch/data
+            name: data
+        - image: "{{ .Values.elasticSearch.logsTemplate.image.name }}:{{ .Values.elasticSearch.logsTemplate.image.tag }}"
+          imagePullPolicy: {{ .Values.elasticSearch.logsTemplate.image.pullPolicy }}
+          name: logs-template
+        volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: es-logging-data
