@@ -6,7 +6,7 @@ String elasticSearchStoragePackageName = ""
 String elasticSearchChartName = "elasticsearch"
 String elasticSearchStorageChartName = "elasticsearch-storage"
 
-clientsNode(clientsImage: 'stakater/kops-ansible:helm-bundle') {
+clientsNode(clientsImage: 'stakater/pipeline-tools:dev') {
     container(name: 'clients') {
         def helm = new io.stakater.charts.Helm()
         def chartManager = new io.stakater.charts.ChartManager()
