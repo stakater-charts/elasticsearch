@@ -8,47 +8,27 @@ String elasticSearchStorageChartName = "elasticsearch-storage"
 
 clientsNode(clientsImage: 'stakater/kops-ansible:helm-bundle') {
     container(name: 'clients') {
+        def helm = new io.stakater.charts.Helm()
+        def chartManager = new io.stakater.charts.ChartManager()
         stage('Checkout') {
             checkout scm
         }
         
         stage('Init Helm') {
-            sh "helm init --client-only"
+            helm.init(true)
         }
 
         stage('Prepare Chart') {
-            elasticSearchPackageName = prepareChart(elasticSearchChartName)
-            elasticSearchStoragePackageName = prepareChart(elasticSearchStorageChartName)
+            helm.lint(WORKSPACE, elasticSearchChartName)
+            elasticSearchPackageName = helm.package(WORKSPACE, elasticSearchChartName)
+
+            helm.lint(WORKSPACE, elasticSearchStorageChartName)
+            elasticSearchStoragePackageName = helm.package(WORKSPACE, elasticSearchStorageChartName)
         }
 
         stage('Upload Chart') {
-            uploadChart(elasticSearchChartName, elasticSearchPackageName)
-            uploadChart(elasticSearchStorageChartName, elasticSearchStoragePackageName)
+            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchChartName, elasticSearchPackageName)
+            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchStorageChartName, elasticSearchStoragePackageName)
         }
     }
-}
-
-def prepareChart(String chartName) {
-    result = shOutput """
-                cd ${WORKSPACE}/${chartName}
-                helm lint
-                helm package .
-            """
-
-    return result.substring(result.lastIndexOf('/') + 1, result.length())
-}
-
-def uploadChart(String chartName, String fileName) {
-    sh """
-        cd ${WORKSPACE}/${chartName}
-        curl -L --data-binary \"@${fileName}\" http://chartmuseum/api/charts
-    """
-}
-
-def shOutput(String command) {
-    return sh(
-        script: """
-            ${command}
-        """,
-        returnStdout: true).trim()
 }
