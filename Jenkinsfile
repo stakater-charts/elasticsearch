@@ -6,8 +6,8 @@ String elasticSearchStoragePackageName = ""
 String elasticSearchChartName = "elasticsearch"
 String elasticSearchStorageChartName = "elasticsearch-storage"
 
-clientsNode(clientsImage: 'stakater/pipeline-tools:1.2.0') {
-    container(name: 'clients') {
+toolsNode(toolsImage: 'stakater/pipeline-tools:1.2.0') {
+    container(name: 'tools') {
         def helm = new io.stakater.charts.Helm()
         def common = new io.stakater.Common()
         def chartManager = new io.stakater.charts.ChartManager()
