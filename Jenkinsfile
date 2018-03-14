@@ -6,49 +6,32 @@ String elasticSearchStoragePackageName = ""
 String elasticSearchChartName = "elasticsearch"
 String elasticSearchStorageChartName = "elasticsearch-storage"
 
-clientsNode(clientsImage: 'stakater/kops-ansible:helm-bundle') {
-    container(name: 'clients') {
+toolsNode(toolsImage: 'stakater/pipeline-tools:1.2.0') {
+    container(name: 'tools') {
+        def helm = new io.stakater.charts.Helm()
+        def common = new io.stakater.Common()
+        def chartManager = new io.stakater.charts.ChartManager()
         stage('Checkout') {
             checkout scm
         }
         
         stage('Init Helm') {
-            sh "helm init --client-only"
+            helm.init(true)
         }
 
         stage('Prepare Chart') {
-            elasticSearchPackageName = prepareChart(elasticSearchChartName)
-            elasticSearchStoragePackageName = prepareChart(elasticSearchStorageChartName)
+            helm.lint(WORKSPACE, elasticSearchChartName)
+            elasticSearchPackageName = helm.package(WORKSPACE, elasticSearchChartName)
+
+            helm.lint(WORKSPACE, elasticSearchStorageChartName)
+            elasticSearchStoragePackageName = helm.package(WORKSPACE, elasticSearchStorageChartName)
         }
 
         stage('Upload Chart') {
-            uploadChart(elasticSearchChartName, elasticSearchPackageName)
-            uploadChart(elasticSearchStorageChartName, elasticSearchStoragePackageName)
+            String cmUsername = common.getEnvValue('CHARTMUSEUM_USERNAME')
+            String cmPassword = common.getEnvValue('CHARTMUSEUM_PASSWORD')
+            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchChartName, elasticSearchPackageName, cmUsername, cmPassword)
+            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchStorageChartName, elasticSearchStoragePackageName, cmUsername, cmPassword)
         }
     }
-}
-
-def prepareChart(String chartName) {
-    result = shOutput """
-                cd ${WORKSPACE}/${chartName}
-                helm lint
-                helm package .
-            """
-
-    return result.substring(result.lastIndexOf('/') + 1, result.length())
-}
-
-def uploadChart(String chartName, String fileName) {
-    sh """
-        cd ${WORKSPACE}/${chartName}
-        curl -L --data-binary \"@${fileName}\" http://chartmuseum/api/charts
-    """
-}
-
-def shOutput(String command) {
-    return sh(
-        script: """
-            ${command}
-        """,
-        returnStdout: true).trim()
 }
