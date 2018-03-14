@@ -6,9 +6,10 @@ String elasticSearchStoragePackageName = ""
 String elasticSearchChartName = "elasticsearch"
 String elasticSearchStorageChartName = "elasticsearch-storage"
 
-clientsNode(clientsImage: 'stakater/pipeline-tools:dev') {
+clientsNode(clientsImage: 'stakater/pipeline-tools:1.2.0') {
     container(name: 'clients') {
         def helm = new io.stakater.charts.Helm()
+        def common = new io.stakater.Common()
         def chartManager = new io.stakater.charts.ChartManager()
         stage('Checkout') {
             checkout scm
@@ -27,8 +28,10 @@ clientsNode(clientsImage: 'stakater/pipeline-tools:dev') {
         }
 
         stage('Upload Chart') {
-            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchChartName, elasticSearchPackageName)
-            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchStorageChartName, elasticSearchStoragePackageName)
+            String cmUsername = common.getEnvValue('CHARTMUSEUM_USERNAME')
+            String cmPassword = common.getEnvValue('CHARTMUSEUM_PASSWORD')
+            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchChartName, elasticSearchPackageName, cmUsername, cmPassword)
+            chartManager.uploadToChartMuseum(WORKSPACE, elasticSearchStorageChartName, elasticSearchStoragePackageName, cmUsername, cmPassword)
         }
     }
 }
