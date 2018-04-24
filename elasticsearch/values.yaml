@@ -2,12 +2,25 @@ kubernetes:
   host: https://kubernetes.default
 elasticSearch:
   namespace: tools
+  labels:
+    group: com.stakater.platform
+    provider: stakater
+    version: 2.3.4
   image:
-    name: stakater/elasticsearch
-    tag: "6.1.0"
+    name: stakater/elasticsearch-k8s-aws
+    tag: "2.3.4"
     pullPolicy: IfNotPresent
+  probes:
+    liveness:
+      initialDelaySeconds: 30
+    readiness:
+      initialDelaySeconds: 10
+      failureThreshold: 5
+  persistence:
+    enabled: true
+    volumeClaimName: elasticsearch-storage
   logsTemplate:
     image:
-      name: stakater/es-k8s-logs-template
-      tag: "1.0.0"
+      name: fabric8/elasticsearch-logstash-template
+      tag: "2.2.311"
       pullPolicy: IfNotPresent

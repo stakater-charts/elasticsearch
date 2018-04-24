@@ -1,4 +1,8 @@
 elasticSearchStorage:
+  labels:
+    group: com.stakater.platform
+    provider: stakater
+    version: 2.3.4
   namespace: tools
   efs:
     server: fs-blahblah.efs.us-west-2.amazonaws.com

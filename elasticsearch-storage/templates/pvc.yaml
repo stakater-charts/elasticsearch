@@ -6,15 +6,13 @@ items:
   kind: PersistentVolumeClaim
   metadata:
     labels:
-      chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-      release: {{ .Release.Name | quote }}
-      heritage: {{ .Release.Service | quote }}
-      version: {{ .Chart.Version }}
-    name: es-logging-data
+{{ include "labels.stakater" . | indent 6 }}
+{{ include "labels.chart" . | indent 6 }}
+    name: {{ template "name" . }}
   spec:
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
         storage: {{ .Values.elasticSearchStorage.capacity }}
-    volumeName: es-logging-data-efs-pv
+    volumeName: {{ template "name" . }}-pv
