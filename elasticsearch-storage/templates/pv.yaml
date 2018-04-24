@@ -6,11 +6,9 @@ items:
   kind: PersistentVolume
   metadata:
     labels:
-      chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-      release: {{ .Release.Name | quote }}
-      heritage: {{ .Release.Service | quote }}
-      version: {{ .Chart.Version }}
-    name: es-logging-data-efs-pv
+{{ include "labels.stakater" . | indent 6 }}
+{{ include "labels.chart" . | indent 6 }}
+    name: {{ template "name" . }}-pv
   spec:
     capacity:
       storage: {{ .Values.elasticSearchStorage.capacity }}
