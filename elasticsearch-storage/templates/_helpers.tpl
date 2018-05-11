@@ -23,7 +23,7 @@ provider: {{ .Values.elasticSearchStorage.labels.provider }}
 
 {{- define "labels.stakater" -}}
 {{ template "labels.selector" . }}
-version: {{ .Values.elasticSearchStorage.labels.version | quote }}
+version: "{{ .Values.elasticSearchStorage.labels.version }}"
 {{- end -}}
 
 {{- define "labels.chart" -}}
